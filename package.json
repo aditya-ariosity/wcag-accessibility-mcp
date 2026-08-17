@@ -1,7 +1,7 @@
 {
   "name": "wcag-accessibility-mcp",
   "version": "0.1.2",
-  "description": "A WCAG accessibility testing MCP for AI agents, Codex, Claude Code and automated UI audits.",
+  "description": "A WCAG accessibility testing MCP for AI agents, Codex, Claude Code, and automated UI audits.",
   "keywords": [
     "accessibility",
     "a11y",
@@ -22,7 +22,7 @@
   "homepage": "https://github.com/aditya-ariosity/wcag-accessibility-mcp#readme",
   "type": "module",
   "bin": {
-    "a11y-feedback-mcp": "dist/index.js"
+    "wcag-accessibility-mcp": "./dist/index.js"
   },
   "files": [
     "dist",
@@ -66,5 +66,6 @@
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "mcpName": "io.github.aditya-ariosity/wcag-accessibility"
 }

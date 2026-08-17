@@ -14,12 +14,12 @@
   "author": "Aditya Sharma",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aditya-ariosity/a11y-feedback-mcp.git"
+    "url": "git+https://github.com/aditya-ariosity/wcag-accessibility-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/aditya-ariosity/a11y-feedback-mcp/issues"
+    "url": "https://github.com/aditya-ariosity/wcag-accessibility-mcp/issues"
   },
-  "homepage": "https://github.com/aditya-ariosity/a11y-feedback-mcp#readme",
+  "homepage": "https://github.com/aditya-ariosity/wcag-accessibility-mcp#readme",
   "type": "module",
   "bin": {
     "a11y-feedback-mcp": "dist/index.js"

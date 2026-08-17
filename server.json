@@ -1,0 +1,20 @@
+{
+    "$schema":  "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name":  "io.github.aditya-ariosity/wcag-accessibility",
+    "description":  "A WCAG accessibility testing MCP for AI agents, Codex, Claude Code, and automated UI audits.",
+    "repository":  {
+                       "url":  "https://github.com/aditya-ariosity/wcag-accessibility-mcp",
+                       "source":  "github"
+                   },
+    "version":  "0.1.4",
+    "packages":  [
+                     {
+                         "registryType":  "npm",
+                         "identifier":  "wcag-accessibility-mcp",
+                         "version":  "0.1.4",
+                         "transport":  {
+                                           "type":  "stdio"
+                                       }
+                     }
+                 ]
+}

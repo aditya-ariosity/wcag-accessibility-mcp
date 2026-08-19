@@ -1,6 +1,6 @@
 {
   "name": "wcag-accessibility-mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A WCAG accessibility testing MCP for AI agents, Codex, Claude Code, and automated UI audits.",
   "keywords": [
     "accessibility",

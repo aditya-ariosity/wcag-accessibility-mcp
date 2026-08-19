@@ -22,7 +22,7 @@
   "homepage": "https://github.com/aditya-ariosity/wcag-accessibility-mcp#readme",
   "type": "module",
   "bin": {
-    "wcag-accessibility-mcp": "./dist/index.js"
+    "wcag-accessibility-mcp": "dist/index.js"
   },
   "files": [
     "dist",

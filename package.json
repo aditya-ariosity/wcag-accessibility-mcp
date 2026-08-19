@@ -1,71 +1,71 @@
-﻿{
-    "name":  "wcag-accessibility-mcp",
-    "version":  "0.1.5",
-    "description":  "A WCAG accessibility testing MCP for AI agents, Codex, Claude Code, and automated UI audits.",
-    "keywords":  [
-                     "accessibility",
-                     "a11y",
-                     "mcp",
-                     "wcag",
-                     "axe-core",
-                     "codex",
-                     "claude-code"
-                 ],
-    "author":  "Aditya Sharma",
-    "repository":  {
-                       "type":  "git",
-                       "url":  "git+https://github.com/aditya-ariosity/wcag-accessibility-mcp.git"
-                   },
-    "bugs":  {
-                 "url":  "https://github.com/aditya-ariosity/wcag-accessibility-mcp/issues"
-             },
-    "homepage":  "https://github.com/aditya-ariosity/wcag-accessibility-mcp#readme",
-    "type":  "module",
-    "bin":  {
-                "wcag-accessibility-mcp":  "./dist/index.js"
-            },
-    "files":  [
-                  "dist",
-                  "docs",
-                  "examples",
-                  "skills",
-                  "README.md",
-                  "CHANGELOG.md",
-                  "NOTICE.md",
-                  "CONTRIBUTING.md",
-                  "SECURITY.md",
-                  "LICENSE"
-              ],
-    "scripts":  {
-                    "build":  "tsc -p tsconfig.build.json",
-                    "check":  "tsc -p tsconfig.json --noEmit",
-                    "start":  "node dist/index.js",
-                    "start:http":  "node dist/http.js",
-                    "dev":  "tsx src/index.ts",
-                    "dev:http":  "tsx src/http.ts",
-                    "prepare":  "npm run build",
-                    "test":  "vitest run --exclude tests/audit.e2e.ts",
-                    "test:e2e":  "vitest run tests/audit.e2e.ts",
-                    "test:watch":  "vitest"
-                },
-    "engines":  {
-                    "node":  "\u003e=20"
-                },
-    "dependencies":  {
-                         "@modelcontextprotocol/sdk":  "^1.25.2",
-                         "@sparticuz/chromium":  "^141.0.0",
-                         "axe-core":  "^4.11.0",
-                         "express":  "^5.1.0",
-                         "puppeteer-core":  "^24.31.0",
-                         "zod":  "^4.1.13"
-                     },
-    "devDependencies":  {
-                            "@types/express":  "^5.0.5",
-                            "@types/node":  "^24.10.1",
-                            "tsx":  "^4.20.6",
-                            "typescript":  "^5.9.3",
-                            "vitest":  "^4.0.15"
-                        },
-    "license":  "MIT",
-    "mcpName":  "io.github.aditya-ariosity/wcag-accessibility"
+{
+    "name": "wcag-accessibility-mcp",
+    "version": "0.1.6",
+    "description": "A WCAG accessibility testing MCP for AI agents, Codex, Claude Code, and automated UI audits.",
+    "keywords": [
+        "accessibility",
+        "a11y",
+        "mcp",
+        "wcag",
+        "axe-core",
+        "codex",
+        "claude-code"
+    ],
+    "author": "Aditya Sharma",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/aditya-ariosity/wcag-accessibility-mcp.git"
+    },
+    "bugs": {
+        "url": "https://github.com/aditya-ariosity/wcag-accessibility-mcp/issues"
+    },
+    "homepage": "https://github.com/aditya-ariosity/wcag-accessibility-mcp#readme",
+    "type": "module",
+    "bin": {
+        "wcag-accessibility-mcp": "./dist/index.js"
+    },
+    "files": [
+        "dist",
+        "docs",
+        "examples",
+        "skills",
+        "README.md",
+        "CHANGELOG.md",
+        "NOTICE.md",
+        "CONTRIBUTING.md",
+        "SECURITY.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "check": "tsc -p tsconfig.json --noEmit",
+        "start": "node dist/index.js",
+        "start:http": "node dist/http.js",
+        "dev": "tsx src/index.ts",
+        "dev:http": "tsx src/http.ts",
+        "prepare": "npm run build",
+        "test": "vitest run --exclude tests/audit.e2e.ts",
+        "test:e2e": "vitest run tests/audit.e2e.ts",
+        "test:watch": "vitest"
+    },
+    "engines": {
+        "node": ">=20"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.25.2",
+        "@sparticuz/chromium": "^141.0.0",
+        "axe-core": "^4.11.0",
+        "express": "^5.1.0",
+        "puppeteer-core": "^24.31.0",
+        "zod": "^4.1.13"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.5",
+        "@types/node": "^24.10.1",
+        "tsx": "^4.20.6",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.15"
+    },
+    "license": "MIT",
+    "mcpName": "io.github.aditya-ariosity/wcag-accessibility"
 }

@@ -5,10 +5,10 @@
 Build the project, then register its stdio command:
 
 ```powershell
-cd "C:\full\path\to\a11y-feedback-mcp"
+cd "C:\full\path\to\wcag-accessibility-mcp"
 npm install
 npm run build
-claude mcp add --scope user a11y-feedback -- node "C:\full\path\to\a11y-feedback-mcp\dist\index.js"
+claude mcp add --scope user wcag-accessibility -- node "C:\full\path\to\wcag-accessibility-mcp\dist\index.js"
 claude mcp list
 ```
 
@@ -38,5 +38,5 @@ This is the dependable integration point today. A raw design canvas is not the s
 ## Suggested Claude prompt
 
 ```text
-Use Claude Design to create the interface, then use a11y-feedback to audit the rendered implementation at 1440×900 and 390×844. Correct critical and serious failures first, prefer shared token or component fixes when evidence repeats, and rerun the audit after each batch. Keep incomplete automated checks in a manual accessibility checklist.
+Use Claude Design to create the interface, then use wcag-accessibility to audit the rendered implementation at 1440×900 and 390×844. Correct critical and serious failures first, prefer shared token or component fixes when evidence repeats, and rerun the audit after each batch. Keep incomplete automated checks in a manual accessibility checklist.
 ```

@@ -1,5 +1,6 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { SERVER_NAME } from "./metadata.js";
 import { createA11yServer } from "./server.js";
 
 async function main(): Promise<void> {
@@ -7,10 +8,10 @@ async function main(): Promise<void> {
   const server = createA11yServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("a11y-feedback-mcp is running over stdio");
+  console.error(`${SERVER_NAME} is running over stdio`);
 }
 
 main().catch((error: unknown) => {
-  console.error("a11y-feedback-mcp failed:", error);
+  console.error(`${SERVER_NAME} failed:`, error);
   process.exit(1);
 });

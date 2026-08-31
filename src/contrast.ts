@@ -1,15 +1,12 @@
 import type { ContrastSuggestion } from "./types.js";
+import { CSS_NAMED_COLORS } from "./css-colors.js";
 
 type Rgb = { r: number; g: number; b: number; a?: number };
 
-const NAMED_COLORS: Record<string, Rgb> = {
-  black: { r: 0, g: 0, b: 0 },
-  white: { r: 255, g: 255, b: 255 },
-  red: { r: 255, g: 0, b: 0 },
-  green: { r: 0, g: 128, b: 0 },
-  blue: { r: 0, g: 0, b: 255 },
-  transparent: { r: 0, g: 0, b: 0, a: 0 },
-};
+const NAMED_COLORS: Record<string, Rgb> = Object.fromEntries(
+  Object.entries(CSS_NAMED_COLORS).map(([name, rgb]) => [name, rgb]),
+);
+NAMED_COLORS.transparent = { r: 0, g: 0, b: 0, a: 0 };
 
 function clamp(value: number, min = 0, max = 255): number {
   return Math.min(max, Math.max(min, value));
@@ -39,6 +36,14 @@ function parsePercent(value: string): number {
   return clamp(Number.parseFloat(value), 0, 100) / 100;
 }
 
+function parseCssNumber(value: string, scale = 1): number {
+  if (value.trim().toLowerCase() === "none") return 0;
+  const number = Number.parseFloat(value);
+  return Number.isFinite(number)
+    ? (value.trim().endsWith("%") ? number / 100 * scale : number)
+    : 0;
+}
+
 function hslToRgb(hue: number, saturation: number, lightness: number, alpha?: number): Rgb {
   const h = (((hue % 360) + 360) % 360) / 360;
   if (saturation === 0) {
@@ -65,6 +70,60 @@ function hslToRgb(hue: number, saturation: number, lightness: number, alpha?: nu
     b: channel(-1 / 3) * 255,
     a: alpha,
   };
+}
+
+function linearToSrgb(value: number): number {
+  const channel = value <= 0.0031308
+    ? 12.92 * value
+    : 1.055 * Math.pow(Math.max(0, value), 1 / 2.4) - 0.055;
+  return clamp(channel * 255);
+}
+
+function xyzToRgb(x: number, y: number, z: number, alpha?: number): Rgb {
+  return {
+    r: linearToSrgb(3.2406 * x - 1.5372 * y - 0.4986 * z),
+    g: linearToSrgb(-0.9689 * x + 1.8758 * y + 0.0415 * z),
+    b: linearToSrgb(0.0557 * x - 0.204 * y + 1.057 * z),
+    a: alpha,
+  };
+}
+
+function labToRgb(lightness: number, a: number, b: number, alpha?: number): Rgb {
+  const fy = (lightness + 16) / 116;
+  const fx = fy + a / 500;
+  const fz = fy - b / 200;
+  const epsilon = 216 / 24389;
+  const kappa = 24389 / 27;
+  const inverse = (value: number) => value ** 3 > epsilon
+    ? value ** 3
+    : (116 * value - 16) / kappa;
+  const x50 = 0.96422 * inverse(fx);
+  const y50 = 1.0 * inverse(fy);
+  const z50 = 0.82521 * inverse(fz);
+  // Bradford adaptation from the CSS Lab D50 white point to sRGB D65.
+  const x = 1.0479298 * x50 + 0.0229468 * y50 - 0.0501922 * z50;
+  const y = 0.0296278 * x50 + 0.9904345 * y50 - 0.0170738 * z50;
+  const z = -0.009243 * x50 + 0.0150552 * y50 + 0.7518743 * z50;
+  return xyzToRgb(x, y, z, alpha);
+}
+
+function oklabToRgb(lightness: number, a: number, b: number, alpha?: number): Rgb {
+  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  return {
+    r: linearToSrgb(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+    g: linearToSrgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+    b: linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
+    a: alpha,
+  };
+}
+
+function p3ToRgb(red: number, green: number, blue: number, alpha?: number): Rgb {
+  const x = 0.4865709486 * red + 0.2656676937 * green + 0.1982172852 * blue;
+  const y = 0.2289745641 * red + 0.6917385218 * green + 0.0792869141 * blue;
+  const z = 0.0 * red + 0.0451133819 * green + 1.0439443689 * blue;
+  return xyzToRgb(x, y, z, alpha);
 }
 
 function functionParts(body: string): string[] {
@@ -145,6 +204,74 @@ export function parseColor(input: string): Rgb {
     }
   }
 
+  const lab = color.match(/^lab\((.+)\)$/i);
+  if (lab) {
+    const parts = functionParts(lab[1]);
+    const slash = parts.indexOf("/");
+    const channels = slash === -1 ? parts : parts.slice(0, slash);
+    const alpha = slash === -1 ? undefined : parseAlpha(parts[slash + 1]);
+    if (channels.length >= 3) {
+      return labToRgb(
+        parseCssNumber(channels[0], 100),
+        parseCssNumber(channels[1], 125),
+        parseCssNumber(channels[2], 125),
+        alpha,
+      );
+    }
+  }
+
+  const lch = color.match(/^lch\((.+)\)$/i);
+  if (lch) {
+    const parts = functionParts(lch[1]);
+    const slash = parts.indexOf("/");
+    const channels = slash === -1 ? parts : parts.slice(0, slash);
+    const alpha = slash === -1 ? undefined : parseAlpha(parts[slash + 1]);
+    if (channels.length >= 3) {
+      const chroma = parseCssNumber(channels[1], 150);
+      const hue = parseHue(channels[2]) * Math.PI / 180;
+      return labToRgb(
+        parseCssNumber(channels[0], 100),
+        chroma * Math.cos(hue),
+        chroma * Math.sin(hue),
+        alpha,
+      );
+    }
+  }
+
+  const oklab = color.match(/^oklab\((.+)\)$/i);
+  if (oklab) {
+    const parts = functionParts(oklab[1]);
+    const slash = parts.indexOf("/");
+    const channels = slash === -1 ? parts : parts.slice(0, slash);
+    const alpha = slash === -1 ? undefined : parseAlpha(parts[slash + 1]);
+    if (channels.length >= 3) {
+      return oklabToRgb(
+        parseCssNumber(channels[0], 1),
+        parseCssNumber(channels[1], 0.4),
+        parseCssNumber(channels[2], 0.4),
+        alpha,
+      );
+    }
+  }
+
+  const oklch = color.match(/^oklch\((.+)\)$/i);
+  if (oklch) {
+    const parts = functionParts(oklch[1]);
+    const slash = parts.indexOf("/");
+    const channels = slash === -1 ? parts : parts.slice(0, slash);
+    const alpha = slash === -1 ? undefined : parseAlpha(parts[slash + 1]);
+    if (channels.length >= 3) {
+      const chroma = parseCssNumber(channels[1], 0.4);
+      const hue = parseHue(channels[2]) * Math.PI / 180;
+      return oklabToRgb(
+        parseCssNumber(channels[0], 1),
+        chroma * Math.cos(hue),
+        chroma * Math.sin(hue),
+        alpha,
+      );
+    }
+  }
+
   const srgb = color.match(/^color\(\s*srgb\s+(.+)\)$/i);
   if (srgb) {
     const parts = functionParts(srgb[1]);
@@ -161,7 +288,23 @@ export function parseColor(input: string): Rgb {
     }
   }
 
-  throw new Error(`Unsupported color format: ${input}. Use a CSS sRGB color such as a named color, hex, rgb(), hsl(), or color(srgb ...).`);
+  const p3 = color.match(/^color\(\s*display-p3\s+(.+)\)$/i);
+  if (p3) {
+    const parts = functionParts(p3[1]);
+    const slash = parts.indexOf("/");
+    const channels = slash === -1 ? parts : parts.slice(0, slash);
+    const alpha = slash === -1 ? undefined : parseAlpha(parts[slash + 1]);
+    if (channels.length >= 3) {
+      return p3ToRgb(
+        parseCssNumber(channels[0], 1),
+        parseCssNumber(channels[1], 1),
+        parseCssNumber(channels[2], 1),
+        alpha,
+      );
+    }
+  }
+
+  throw new Error(`Unsupported color format: ${input}. Use a CSS color such as a named color, hex, rgb(), hsl(), lab(), lch(), oklch(), or color(display-p3 ...).`);
 }
 
 function channelToLinear(value: number): number {

@@ -2,7 +2,7 @@ import { mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { auditFile, auditHtml } from "../src/audit.js";
+import { auditFile, auditHtml, axeTagsForStandard, htmlWithBaseUrl } from "../src/audit.js";
 import { contrastRatio, suggestContrastFix } from "../src/contrast.js";
 import { remediationFor } from "../src/remediation.js";
 import { isPrivateAddress } from "../src/security.js";
@@ -62,7 +62,19 @@ describe("deployment regression coverage", () => {
 
   it("uses non-dead references for WCAG 2.0 criteria", () => {
     const criterion = getWcagChecklist("wcag2a").find((item) => item.id === "1.1.1");
-    expect(criterion?.reference).not.toBe("https://www.w3.org/TR/WCAG20/#non-text-content");
+    expect(criterion?.reference).toBe("https://www.w3.org/TR/WCAG20/#non-text-content");
+  });
+
+  it("keeps the doctype first when injecting an HTML base URL", () => {
+    const html = htmlWithBaseUrl("<!doctype html><html><body>hello</body></html>", "https://example.com/assets/");
+    expect(html.trimStart().toLowerCase().startsWith("<!doctype html>")).toBe(true);
+    expect(html).toContain("<head><base href=\"https://example.com/assets/\">");
+  });
+
+  it("runs only axe tags supported by the installed axe version", () => {
+    expect(axeTagsForStandard("wcag22aaa")).not.toContain("wcag22aaa");
+    expect(axeTagsForStandard("wcag22aaa")).not.toContain("wcag21aaa");
+    expect(axeTagsForStandard("wcag22aaa")).toContain("wcag22aa");
   });
 
   it("reports the version where a criterion was introduced", () => {

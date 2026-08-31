@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express, { type ErrorRequestHandler, type RequestHandler } from "express";
+import { SERVER_NAME, SERVER_VERSION } from "./metadata.js";
 import { createA11yServer } from "./server.js";
 
 process.env.A11Y_MCP_TRANSPORT = "http";
@@ -72,7 +73,7 @@ app.use(jsonErrorHandler);
 app.use(hostValidation);
 
 app.get("/health", (_request, response) => {
-  response.json({ status: "ok", service: "a11y-feedback-mcp", version: "0.1.0" });
+  response.json({ status: "ok", service: SERVER_NAME, version: SERVER_VERSION });
 });
 
 app.post("/mcp", async (request, response) => {
@@ -119,7 +120,7 @@ app.delete("/mcp", (_request, response) => {
 });
 
 const server = app.listen(port, host, () => {
-  console.log(`a11y-feedback-mcp listening on http://${host}:${port}/mcp`);
+  console.log(`${SERVER_NAME} listening on http://${host}:${port}/mcp`);
 });
 
 server.on("error", (error) => {

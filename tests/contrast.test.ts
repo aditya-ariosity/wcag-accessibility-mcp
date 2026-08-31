@@ -39,4 +39,16 @@ describe("contrast utilities", () => {
     expect(result.suggestedForeground).toBeUndefined();
     expect(result.suggestedBackground).toBeUndefined();
   });
+
+  it.each([
+    "navy",
+    "slategray",
+    "oklch(62% 0.2 250)",
+    "lab(60% 20 30)",
+    "lch(60% 40 250)",
+    "oklab(60% 0.6 -0.1)",
+    "color(display-p3 0.2 0.4 0.8)",
+  ])("accepts CSS Color 4 syntax: %s", (color) => {
+    expect(() => contrastRatio(color, "#ffffff")).not.toThrow();
+  });
 });

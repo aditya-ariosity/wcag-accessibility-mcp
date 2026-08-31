@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { coverageForStandard, getWcagChecklist } from "../src/wcag.js";
+import { coverageForStandard, getWcagChecklist, profileFromRuleResults } from "../src/wcag.js";
 
 describe("WCAG catalog", () => {
   it.each([
@@ -26,5 +26,18 @@ describe("WCAG catalog", () => {
     const coverage = coverageForStandard("wcag22aaa");
     expect(coverage.requiredCriteriaCount).toBe(86);
     expect(coverage.criteriaRequiringManualReview).toBeGreaterThan(0);
+  });
+
+  it("models stricter alternatives without pretending every criterion has an AAA rung", () => {
+    const contrast = getWcagChecklist("wcag22aaa").find((criterion) => criterion.id === "1.4.3");
+    const semantics = getWcagChecklist("wcag22aaa").find((criterion) => criterion.id === "4.1.2");
+    expect(contrast?.relatedCriteria).toContainEqual({ id: "1.4.6", relationship: "stricter-alternative" });
+    expect(semantics?.relatedCriteria).toEqual([]);
+  });
+
+  it("does not mark a profile fully verified while manual criteria are unresolved", () => {
+    const profile = profileFromRuleResults("wcag22aa", { violations: [], incomplete: [], passes: [] });
+    expect(profile.highestFullyVerifiedLevel).toBeNull();
+    expect(profile.counts.untested).toBeGreaterThan(0);
   });
 });

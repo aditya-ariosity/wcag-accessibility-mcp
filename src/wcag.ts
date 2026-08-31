@@ -21,6 +21,60 @@ export type WcagCriterion = CriterionSource & {
   axeRuleIds: string[];
   evaluation: "automated-partial" | "manual";
   testMethod: string;
+  relatedCriteria: Array<{
+    id: string;
+    relationship: "stricter-alternative" | "same-family" | "prerequisite" | "related";
+  }>;
+};
+
+export type CriterionOutcome = "passed" | "failed" | "inapplicable" | "cantTell" | "untested";
+
+export type ProfileEvaluation = {
+  requested: AuditStandard;
+  highestFullyVerifiedLevel: WcagLevel | null;
+  blockers: string[];
+  counts: Record<CriterionOutcome, number>;
+  criteria: Array<{
+    id: string;
+    level: WcagLevel;
+    outcome: CriterionOutcome;
+    automated: boolean;
+  }>;
+};
+
+const RELATED_CRITERIA: Record<string, Array<{ id: string; relationship: WcagCriterion["relatedCriteria"][number]["relationship"] }>> = {
+  "1.4.3": [{ id: "1.4.6", relationship: "stricter-alternative" }],
+  "1.4.6": [{ id: "1.4.3", relationship: "stricter-alternative" }],
+  "1.4.5": [{ id: "1.4.9", relationship: "stricter-alternative" }],
+  "1.4.9": [{ id: "1.4.5", relationship: "stricter-alternative" }],
+  "2.1.1": [{ id: "2.1.3", relationship: "stricter-alternative" }],
+  "2.1.3": [{ id: "2.1.1", relationship: "stricter-alternative" }],
+  "2.4.7": [
+    { id: "2.4.11", relationship: "same-family" },
+    { id: "2.4.12", relationship: "same-family" },
+    { id: "2.4.13", relationship: "same-family" },
+  ],
+  "2.4.11": [
+    { id: "2.4.7", relationship: "same-family" },
+    { id: "2.4.12", relationship: "same-family" },
+    { id: "2.4.13", relationship: "same-family" },
+  ],
+  "2.4.12": [
+    { id: "2.4.7", relationship: "same-family" },
+    { id: "2.4.11", relationship: "same-family" },
+    { id: "2.4.13", relationship: "same-family" },
+  ],
+  "2.4.13": [
+    { id: "2.4.7", relationship: "same-family" },
+    { id: "2.4.11", relationship: "same-family" },
+    { id: "2.4.12", relationship: "same-family" },
+  ],
+  "2.5.8": [{ id: "2.5.5", relationship: "stricter-alternative" }],
+  "2.5.5": [{ id: "2.5.8", relationship: "stricter-alternative" }],
+  "3.3.4": [{ id: "3.3.6", relationship: "stricter-alternative" }],
+  "3.3.6": [{ id: "3.3.4", relationship: "stricter-alternative" }],
+  "3.3.8": [{ id: "3.3.9", relationship: "stricter-alternative" }],
+  "3.3.9": [{ id: "3.3.8", relationship: "stricter-alternative" }],
 };
 
 const CRITERIA: CriterionSource[] = [
@@ -179,7 +233,7 @@ export function getWcagChecklist(
         .map((rule) => rule.ruleId)
         .sort();
       const principle = PRINCIPLES[criterion.id[0]];
-      const referenceVersion = version === "2.0" ? "WCAG21" : version === "2.1" ? "WCAG21" : "WCAG22";
+      const referenceVersion = version === "2.0" ? "WCAG20" : version === "2.1" ? "WCAG21" : "WCAG22";
       return {
         ...criterion,
         principle,
@@ -189,10 +243,58 @@ export function getWcagChecklist(
         axeRuleIds,
         evaluation: axeRuleIds.length ? "automated-partial" : "manual",
         testMethod: testMethodFor(criterion),
+        relatedCriteria: RELATED_CRITERIA[criterion.id] ?? [],
       };
     })
     .filter((criterion) => !filters.principle || criterion.principle === filters.principle)
     .filter((criterion) => !filters.evaluation || criterion.evaluation === filters.evaluation);
+}
+
+export function profileFromRuleResults(
+  standard: AuditStandard,
+  ruleResults: { violations: string[]; incomplete: string[]; passes: string[] },
+): ProfileEvaluation {
+  const criteria = getWcagChecklist(standard);
+  const violationIds = new Set(ruleResults.violations);
+  const incompleteIds = new Set(ruleResults.incomplete);
+  const passIds = new Set(ruleResults.passes);
+  const evaluations = criteria.map((criterion) => {
+    let outcome: CriterionOutcome = "untested";
+    if (!criterion.axeRuleIds.length) {
+      outcome = "untested";
+    } else if (criterion.axeRuleIds.some((id) => violationIds.has(id))) {
+      outcome = "failed";
+    } else if (criterion.axeRuleIds.some((id) => incompleteIds.has(id))) {
+      outcome = "cantTell";
+    } else if (criterion.axeRuleIds.some((id) => passIds.has(id))) {
+      outcome = "passed";
+    }
+    return { id: criterion.id, level: criterion.level, outcome, automated: criterion.axeRuleIds.length > 0 };
+  });
+  const counts: Record<CriterionOutcome, number> = {
+    passed: 0,
+    failed: 0,
+    inapplicable: 0,
+    cantTell: 0,
+    untested: 0,
+  };
+  evaluations.forEach((evaluation) => { counts[evaluation.outcome] += 1; });
+  const blockers = evaluations
+    .filter((evaluation) => evaluation.outcome === "failed" || evaluation.outcome === "cantTell" || evaluation.outcome === "untested")
+    .map((evaluation) => evaluation.id);
+  const requestedLevel = standardLevel(standard);
+  const levels: WcagLevel[] = ["A", "AA", "AAA"];
+  let highestFullyVerifiedLevel: WcagLevel | null = null;
+  for (const level of levels) {
+    const required = evaluations.filter((evaluation) => LEVEL_ORDER[evaluation.level] <= LEVEL_ORDER[level]);
+    if (required.every((evaluation) => evaluation.outcome === "passed")) {
+      highestFullyVerifiedLevel = level;
+    }
+  }
+  if (highestFullyVerifiedLevel && LEVEL_ORDER[highestFullyVerifiedLevel] > LEVEL_ORDER[requestedLevel]) {
+    highestFullyVerifiedLevel = requestedLevel;
+  }
+  return { requested: standard, highestFullyVerifiedLevel, blockers, counts, criteria: evaluations };
 }
 
 export function coverageForStandard(standard: AuditStandard): {

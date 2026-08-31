@@ -10,15 +10,18 @@ A skill can tell an agent to check contrast. It cannot inspect the currently ren
 
 ## Components
 
+The active Phase 2 contract is the Evidence Core described in `PHASE2_CORE_BUILD.md`. The stable server surface remains the original seven tools; matrix, screenshot/OCR, browser diagnostics, and design-snapshot adapters are experimental and are advertised only when `A11Y_MCP_ENABLE_EXPERIMENTAL_TOOLS=true`.
+
 | Component | Responsibility |
 |---|---|
 | MCP server | Validated tool contracts, read-only annotations, stdio/HTTP transport |
 | Browser runner | Render URL, HTML, or allowed local file at a specified viewport |
 | axe-core | Deterministic automated rule evaluation and rule metadata |
+| Evidence core | Versioned run IDs, evidence references, DOM/shadow/iframe paths, criterion outcomes, and explicit unresolved states |
 | Evidence mapper | Selectors, DOM snippets, styles, text, bounds, impact, WCAG tags |
 | Contrast engine | WCAG luminance/ratio math and passing color candidates |
 | WCAG catalog | Complete 2.0/2.1/2.2 A/AA/AAA criterion sets, W3C references, and partial-automation labels |
-| Agent skill | Audit → prioritize → fix → re-audit → manual-check workflow |
+| Agent skill | Audit, prioritize, fix, re-audit, and manual-check workflow |
 
 ## Capability and risk model
 
@@ -55,13 +58,14 @@ A skill can tell an agent to check contrast. It cannot inspect the currently ren
 
 ## Acceptance criteria for v0.1
 
-- Codex and Claude Code can list and call all seven tools over stdio.
+- Codex and Claude Code can list and call the documented tools over stdio.
 - URL, raw HTML, and allowed local HTML produce structured axe results.
 - Each returned violation includes rule metadata and affected DOM evidence.
 - Simple opaque contrast failures can include a passing color candidate.
 - The server never writes to audited projects.
 - HTTP mode blocks private targets and local files by default.
 - Automated results always state that they do not prove conformance.
+- Every audit returns a profile summary that distinguishes passed, failed, incomplete, and untested criteria; no level is “verified” while required manual criteria remain unresolved.
 - WCAG 2.2 AA exposes all 55 required A/AA criteria and WCAG 2.2 AAA exposes all 86 required A/AA/AAA criteria.
 - Unit/protocol tests and an opt-in browser end-to-end test are included.
 

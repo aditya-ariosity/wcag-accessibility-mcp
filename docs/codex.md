@@ -5,7 +5,7 @@
 In PowerShell:
 
 ```powershell
-cd "C:\full\path\to\a11y-feedback-mcp"
+cd "C:\full\path\to\wcag-accessibility-mcp"
 npm install
 npm run build
 ```
@@ -15,7 +15,7 @@ Confirm that `dist\index.js` exists.
 ## 2. Register it
 
 ```powershell
-codex mcp add a11y-feedback -- node "C:\full\path\to\a11y-feedback-mcp\dist\index.js"
+codex mcp add wcag-accessibility -- node "C:\full\path\to\wcag-accessibility-mcp\dist\index.js"
 ```
 
 Use a normal Windows path for the command. If you edit TOML manually, escape backslashes as shown in the README.
@@ -23,7 +23,7 @@ Use a normal Windows path for the command. If you edit TOML manually, escape bac
 For local projects, set the allowed root in `~/.codex/config.toml`:
 
 ```toml
-[mcp_servers.a11y_feedback.env]
+[mcp_servers.wcag_accessibility.env]
 A11Y_MCP_ALLOWED_ROOT = "C:\\Users\\YourName\\Projects"
 ```
 
@@ -33,7 +33,7 @@ A11Y_MCP_ALLOWED_ROOT = "C:\\Users\\YourName\\Projects"
 codex mcp list
 ```
 
-Restart Codex after changing MCP configuration. Ask Codex: “List the accessibility tools you can use.” You should see the seven tools documented in the README.
+Restart Codex after changing MCP configuration. Ask Codex: “List the accessibility tools you can use.” You should see the tools documented in the README.
 
 ## 4. Use the feedback loop
 

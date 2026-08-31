@@ -39,6 +39,9 @@ export type ContrastSuggestion = {
 
 export type AuditNode = {
   target: string[];
+  /** Preserves axe's selector chain for shadow-DOM evidence resolution. */
+  targetPath?: string[];
+  evidence?: EvidenceReference[];
   html: string;
   failureSummary?: string;
   context?: ElementContext;
@@ -71,11 +74,31 @@ export type AuditSummary = {
 };
 
 export type AuditResult = {
+  /** Versioned evidence envelope; legacy fields remain stable for existing clients. */
+  schemaVersion?: "2.0";
+  runId?: string;
+  evidenceSource?: EvidenceSource;
+  state?: "default";
+  locale?: { language?: string; direction: "ltr" | "rtl" | "mixed" | "unknown" };
+  evidence?: EvidenceReference[];
+  criterionEvaluations?: CriterionEvaluation[];
   engine: string;
   standard: AuditStandard;
   testedAt: string;
   target: string;
   viewport: Viewport;
+  profile?: {
+    requested: AuditStandard;
+    highestFullyVerifiedLevel: "A" | "AA" | "AAA" | null;
+    blockers: string[];
+    counts: Record<"passed" | "failed" | "inapplicable" | "cantTell" | "untested", number>;
+    criteria: Array<{
+      id: string;
+      level: "A" | "AA" | "AAA";
+      outcome: "passed" | "failed" | "inapplicable" | "cantTell" | "untested";
+      automated: boolean;
+    }>;
+  };
   summary: AuditSummary;
   coverage: {
     requiredCriteriaCount: number;
@@ -94,3 +117,4 @@ export type AuditResult = {
   }>;
   notes: string[];
 };
+import type { CriterionEvaluation, EvidenceReference, EvidenceSource } from "./evidence.js";
